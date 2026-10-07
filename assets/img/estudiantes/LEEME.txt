@@ -1,0 +1,2 @@
+Sube aquí las fotos de los estudiantes (cuadradas, mínimo 400x400 px, .jpg o .webp).
+Nombra cada archivo como su identificador en assets/data/estudiantes.json, por ejemplo: karla-marisa-torres-arciga.jpg
