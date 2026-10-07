@@ -1,0 +1,5 @@
+# robots.txt de cromgenlab.com
+User-agent: *
+Allow: /
+
+Sitemap: https://cromgenlab.com/sitemap.xml
