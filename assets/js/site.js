@@ -45,7 +45,7 @@
     document.addEventListener('click',function(e){if(!pop.hidden&&!pop.contains(e.target)&&!(e.target.closest&&e.target.closest('li[data-slug] .av'))){pop.hidden=true;current=null}});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'){pop.hidden=true;current=null}});
     window.addEventListener('scroll',function(){if(!noHover){pop.hidden=true;current=null}},{passive:true});
-    fetch(base+'data/estudiantes.json').then(function(r){return r.ok?r.json():{}}).then(function(data){
+    fetch(base+'data/estudiantes.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(data){
       leaves.forEach(function(li){
         var d=data[li.getAttribute('data-slug')];if(!d)return;
         if(d.foto){d._src=/^https?:/.test(d.foto)?d.foto:base+'img/estudiantes/'+d.foto;var av=li.querySelector('.av');if(av){var im=document.createElement('img');im.className='av';im.alt='';im.loading='lazy';im.width=48;im.height=48;im.src=d._src;av.replaceWith(im)}}
