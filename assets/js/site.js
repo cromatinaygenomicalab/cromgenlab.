@@ -32,17 +32,17 @@
       var bx=document.createElement('div');bx.className='spop-b';
       var h=document.createElement('p');h.className='spop-n';h.textContent=d.nombre;bx.appendChild(h);
       var lv=li.querySelector('.lv');if(lv){var g=document.createElement('p');g.className='spop-g';g.textContent=lv.textContent;bx.appendChild(g)}
-      var bio=EN?(d.resena_en||d.resena_es):(d.resena_es||d.resena_en);if(bio){var p=document.createElement('p');p.className='spop-r';p.textContent=bio;bx.appendChild(p)}
+      var bio=EN?(d.resena_en||d.resena_es):(d.resena_es||d.resena_en);if(bio){var p=document.createElement('p');p.className='spop-r';p.textContent=bio;bx.appendChild(p)}pop.classList.toggle('long',!!bio&&bio.length>280);
       var l=linksEl(d,'slinks');if(l)bx.appendChild(l);
       pop.appendChild(bx);pop.hidden=false;shownAt=Date.now();
-      var r=anchor.getBoundingClientRect(),W=pop.offsetWidth,H=pop.offsetHeight,vw=innerWidth,vh=innerHeight,x,y;
-      if(vw<640){x=Math.max(12,(vw-W)/2);y=Math.min(Math.max(12,r.bottom+10),vh-H-12)}
-      else{x=r.right+16+W<vw?r.right+16:r.left-W-16;if(x<12)x=Math.min(vw-W-12,r.left);y=Math.min(Math.max(76,r.top-20),vh-H-12)}
-      pop.style.left=Math.round(x)+'px';pop.style.top=Math.round(Math.max(12,y))+'px';
+      var r=li.getBoundingClientRect(),ra=anchor.getBoundingClientRect(),W=pop.offsetWidth,H=pop.offsetHeight,vw=innerWidth,vh=innerHeight,x,y;
+      if(vw<640){x=Math.max(12,(vw-W)/2);y=Math.min(Math.max(72,ra.bottom+10),vh-H-12)}
+      else{x=r.right+16+W<vw?r.right+16:r.left-W-16;if(x<12)x=Math.min(vw-W-12,r.left);y=Math.min(Math.max(76,ra.top-20),vh-H-12)}
+      if(vw>=640)y=Math.max(76,y);pop.style.left=Math.round(x)+'px';pop.style.top=Math.round(Math.max(12,y))+'px';
     }
     function hide(){hideT=setTimeout(function(){pop.hidden=true;current=null},160)}
     pop.addEventListener('mouseenter',function(){clearTimeout(hideT)});pop.addEventListener('mouseleave',hide);
-    document.addEventListener('click',function(e){if(!pop.hidden&&!pop.contains(e.target)&&!(e.target.closest&&e.target.closest('li[data-slug] .av, li[data-slug] b'))){pop.hidden=true;current=null}});
+    document.addEventListener('click',function(e){if(!pop.hidden&&!pop.contains(e.target)&&!(e.target.closest&&e.target.closest('li[data-slug] .av'))){pop.hidden=true;current=null}});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'){pop.hidden=true;current=null}});
     window.addEventListener('scroll',function(){if(!noHover){pop.hidden=true;current=null}},{passive:true});
     fetch(base+'data/estudiantes.json').then(function(r){return r.ok?r.json():{}}).then(function(data){
@@ -52,16 +52,30 @@
         var l=linksEl(d,'slinks');if(l)li.appendChild(l);
         if(!(d.foto||d.resena_es||d.resena_en))return;
         li.classList.add('has-prof');
-        var name=li.querySelector('b'),pic=li.querySelector('.av');
-        name.tabIndex=0;name.setAttribute('aria-haspopup','dialog');
-        [name,pic].forEach(function(el){if(!el)return;
-          el.addEventListener('mouseenter',function(){if(!noHover)show(li,d,pic||name)});
-          el.addEventListener('mouseleave',function(){if(!noHover)hide()});
-          el.addEventListener('click',function(e){e.stopPropagation();if(current===li&&!pop.hidden){if(Date.now()-shownAt>400){pop.hidden=true;current=null}}else show(li,d,pic||name)});
-        });
-        name.addEventListener('focus',function(){show(li,d,pic||name)});name.addEventListener('blur',hide);
+        var pic=li.querySelector('.av');if(!pic)return;
+        pic.tabIndex=0;pic.setAttribute('role','button');pic.setAttribute('aria-haspopup','dialog');pic.setAttribute('aria-label',(EN?'View profile of ':'Ver perfil de ')+d.nombre);
+        pic.addEventListener('mouseenter',function(){if(!noHover)show(li,d,pic)});
+        pic.addEventListener('mouseleave',function(){if(!noHover)hide()});
+        pic.addEventListener('click',function(e){e.stopPropagation();if(current===li&&!pop.hidden){if(noHover||Date.now()-shownAt>400){pop.hidden=true;current=null}}else show(li,d,pic)});
+        pic.addEventListener('focus',function(){if(!noHover&&pic.matches(':focus-visible'))show(li,d,pic)});pic.addEventListener('blur',function(){if(!noHover)hide()});
+        pic.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();show(li,d,pic)}});
       });
     }).catch(function(){});
+  }
+
+
+  // Galería con visor
+  var lb=document.getElementById('lb');
+  if(lb){
+    var links=[].slice.call(document.querySelectorAll('a.gl')),cur=0,lim=lb.querySelector('img'),lcap=lb.querySelector('figcaption');
+    function open(i){cur=(i+links.length)%links.length;var a=links[cur];lim.src=a.href;lim.alt=a.dataset.cap;lcap.textContent=a.dataset.cap;lb.hidden=false;document.body.style.overflow='hidden'}
+    function close(){lb.hidden=true;document.body.style.overflow='';lim.src=''}
+    links.forEach(function(a,i){a.addEventListener('click',function(e){e.preventDefault();open(i)})});
+    lb.querySelector('.lb-x').addEventListener('click',close);
+    lb.querySelector('.lb-p').addEventListener('click',function(){open(cur-1)});
+    lb.querySelector('.lb-n').addEventListener('click',function(){open(cur+1)});
+    lb.addEventListener('click',function(e){if(e.target===lb)close()});
+    document.addEventListener('keydown',function(e){if(lb.hidden)return;if(e.key==='Escape')close();if(e.key==='ArrowRight')open(cur+1);if(e.key==='ArrowLeft')open(cur-1)});
   }
 
   // Fibra de cromatina
